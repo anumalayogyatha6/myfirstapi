@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from pydantic import BaseModel  # ← ADD THIS
 
 app = FastAPI()
 
@@ -16,5 +17,18 @@ def about():
         "name": "Yogyatha",
         "skills": ["Python", "FastAPI", "HTML", "CSS"],
         "goal": "Software Intern 2026",
-        "college" :  "siddhartha academy of higher education"
+        "college": "Siddhartha Academy of Higher Education"
+    }
+
+# ← ADD EVERYTHING BELOW
+
+class Item(BaseModel):
+    name: str
+    description: str
+
+@app.post("/items")
+def create_item(item: Item):
+    return {
+        "message": "Item created successfully",
+        "item": item
     }
