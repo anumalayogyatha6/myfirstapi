@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException 
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import models
@@ -49,3 +49,23 @@ def about():
         "goal": "Software Intern 2026",
         "college": "Siddhartha Academy of Higher Education"
     }
+# DELETE - remove item by id
+@app.delete("/items/{item_id}")
+def delete_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(models.Item).filter(models.Item.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    db.delete(item)
+    db.commit()
+    return {"message": f"Item {item_id} deleted successfully"}
+# UPDATE - modify existing item
+@app.put("/items/{item_id}")
+def update_item(item_id: int, item: ItemCreate, db: Session = Depends(get_db)):
+    db_item = db.query(models.Item).filter(models.Item.id == item_id).first()
+    if not db_item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    db_item.name = item.name
+    db_item.description = item.description
+    db.commit()
+    db.refresh(db_item)
+    return db_item
